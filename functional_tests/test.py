@@ -68,3 +68,41 @@ class NewVisitorTest(LiveServerTestCase):
         self.wait_for_row_in_list_table("2: Use peacock feathers to make a fly")
 
         # Satisfied, she goes back to sleep
+
+    def test_multiple_users_can_start_lists_at_different_urls(self):
+        # User starts a new to-do list
+        self.browser.get(self.live_server_url)
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
+        inputbox.send_keys("Buy peacock feathers")
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table("1: Buy peacock feathers")
+
+        user_list_url = self.browser.current_url
+        self.assertRegex(user_list_url, "/lists/.+")
+
+        # Now a new user, comes along to the site.
+        ## Delete all the browser's cookies
+        self.browser.delete_all_cookies()
+
+        # New user visits the home page. 
+        # There is no sign of Previous User list
+        self.browser.get(self.live_server_url)
+        page_text = self.browser.find_element(By.TAG_NAME, "body").text
+        self.assertIn("Buy peacock feathers", page_text)
+        self.assertIn("make a fly", page_text)
+
+        # New User starts a new list by entering a new item.
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
+        inputbox.send_keys("Buy milk")
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table("1: Buy milk")
+
+        # New User gets his own unique URL
+        new_user_list_url = self.browser.current_url
+        self.assertRegex(new_user_list_url, "/lists/.+")
+        self.assertNotEqual(new_user_list_url, user_list_url)
+
+        # Again, there is no trace of previous user
+        page_text = self.browser.find_element(By.TAG_NAME, "body").text
+        self.assertNotIn("Buy peacock feathers", page_text)
+        self.assertIn("Buy milk", page_text)
