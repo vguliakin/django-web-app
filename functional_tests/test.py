@@ -88,8 +88,8 @@ class NewVisitorTest(LiveServerTestCase):
         # There is no sign of Previous User list
         self.browser.get(self.live_server_url)
         page_text = self.browser.find_element(By.TAG_NAME, "body").text
-        self.assertIn("Buy peacock feathers", page_text)
-        self.assertIn("make a fly", page_text)
+        self.assertNotIn("Buy peacock feathers", page_text)
+        self.assertNotIn("make a fly", page_text)
 
         # New User starts a new list by entering a new item.
         inputbox = self.browser.find_element(By.ID, "id_new_item")
